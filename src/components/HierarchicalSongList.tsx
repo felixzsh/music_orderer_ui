@@ -73,7 +73,7 @@ export function HierarchicalSongList({ songGroups, onDeleteSong, onMoveSong, onD
   return (
     <DragDropContext onDragEnd={onDragEnd}>
       <div className="space-y-1">
-        {Object.entries(songGroups).map(([groupName, group]) => {
+        {Object.entries(songGroups).reverse().map(([groupName, group]) => {
           const isGroupExpanded = expandedGroups[groupName] ?? true;
 
           return (

@@ -80,7 +80,7 @@ export const OrdererPage = ({ userData }: OrdererPageProps) => {
         };
       }
 
-      newGroups[tagName].songs.push(hierarchicalSong);
+      newGroups[tagName].songs.unshift(hierarchicalSong);
       newGroups[tagName].count = newGroups[tagName].songs.length;
 
       return newGroups;
