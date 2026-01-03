@@ -29,7 +29,7 @@ export function PromptSearch({ onAddSong, existingTags }: PromptSearchProps) {
     increment();
     try {
       await streamData(
-        `/search/prompt?prompt=${encodeURIComponent(prompt)}`,
+        `/metube/search/prompt?prompt=${encodeURIComponent(prompt)}`,
         onAddSong,
         undefined,
         tagName,
@@ -67,7 +67,7 @@ export function PromptSearch({ onAddSong, existingTags }: PromptSearchProps) {
         <MessageSquare className="h-5 w-5" />
         <h3>Búsqueda por Prompt</h3>
       </div>
-      
+
       <div className="space-y-3">
         <TagNameInput
           value={tagName}
@@ -76,7 +76,7 @@ export function PromptSearch({ onAddSong, existingTags }: PromptSearchProps) {
           placeholder="ej: Música relajante"
           onEnterPress={handleTagNameEnter}
         />
-        
+
         <div>
           <Label htmlFor="prompt">Descripción</Label>
           <Textarea
@@ -89,8 +89,8 @@ export function PromptSearch({ onAddSong, existingTags }: PromptSearchProps) {
             rows={3}
           />
         </div>
-        
-        <Button 
+
+        <Button
           ref={buttonRef}
           onClick={searchByPrompt}
           onKeyDown={handleButtonEnter}
