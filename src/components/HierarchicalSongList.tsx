@@ -3,7 +3,7 @@ import { ChevronDown, ChevronRight, Music, User, Hash, Trash2 } from 'lucide-rea
 import { Button } from './ui/button';
 import { SongItem } from './SongItem';
 import { SongGroup, HierarchicalSong } from '../types/api';
-import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 
 interface HierarchicalSongListProps {
   songGroups: { [key: string]: SongGroup };

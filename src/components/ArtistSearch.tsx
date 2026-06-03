@@ -22,7 +22,6 @@ export function ArtistSearch({ onAddSong, onStreamEvent }: ArtistSearchProps) {
   const [showDropdown, setShowDropdown] = useState(false);
   const searchContainerRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
-  const pedirHitsButtonRef = useRef<HTMLButtonElement>(null);
   const { streamData } = useStreamingApi();
 
   // Manejar clicks fuera del contenedor de búsqueda
@@ -260,7 +259,6 @@ export function ArtistSearch({ onAddSong, onStreamEvent }: ArtistSearchProps) {
               {selectedArtist && artistDetails && (
                 <div className="flex gap-2">
                   <Button
-                    ref={pedirHitsButtonRef}
                     onClick={requestHits}
                     disabled={!artistDetails.playlist_id}
                     className="flex-1"
