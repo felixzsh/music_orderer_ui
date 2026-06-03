@@ -20,7 +20,14 @@ interface OrdererPageProps {
 }
 
 export const OrdererPage = ({ userData }: OrdererPageProps) => {
-  const [songGroups, setSongGroups] = useState<{ [key: string]: SongGroup }>({});
+  const [songGroups, setSongGroups] = useState<{ [key: string]: SongGroup }>(() => {
+    const saved = localStorage.getItem('musicOrderer_songGroups');
+    return saved ? JSON.parse(saved) : {};
+  });
+  useEffect(() => {
+    localStorage.setItem('musicOrderer_songGroups', Object.keys(songGroups).length > 0 ? JSON.stringify(songGroups) : '');
+  }, [songGroups]);
+
   const [currentPanel, setCurrentPanel] = useState<'builder' | 'preview'>('builder');
   const isMobile = useMobile();
   const { isDark, toggleDarkMode } = useDarkMode();
@@ -215,6 +222,7 @@ export const OrdererPage = ({ userData }: OrdererPageProps) => {
 
       if (data.success) {
         // Éxito - limpiar estado
+        localStorage.removeItem('musicOrderer_songGroups');
         setSongGroups({});
         
         // Mostrar confirmación (puedes reemplazar alert con un componente mejor)
