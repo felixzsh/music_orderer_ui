@@ -68,6 +68,16 @@ export const OrdererPage = ({ userData }: OrdererPageProps) => {
     };
 
     setSongGroups(prev => {
+      const newSongIds = song.ids || (song.id ? [song.id] : []);
+      if (newSongIds.length > 0) {
+        const existingIds = new Set(
+          Object.values(prev).flatMap(g => g.songs.flatMap(s => s.ids || []))
+        );
+        if (newSongIds.some(id => existingIds.has(id))) {
+          return prev;
+        }
+      }
+
       const newGroups = { ...prev };
       
       if (!newGroups[tagName]) {

@@ -45,23 +45,44 @@ export function SongSearch({ onAddSong, existingTags }: SongSearchProps) {
     }
   };
 
-  // Submit y focus múltiple como en el ejemplo comprobado
   const handleSubmit = async () => {
     if (!tagName.trim() || !songName.trim() || !artistName.trim()) return;
-    // Limpiar campos y focus inmediatamente
+    const currentTagName = tagName;
+    const currentSongName = songName;
+    const currentArtistName = artistName;
+
+    if (songInputRef.current) {
+      songInputRef.current.value = '';
+      songInputRef.current.focus();
+    }
+    if (artistInputRef.current) {
+      artistInputRef.current.value = '';
+    }
     setSongName('');
     setArtistName('');
-    setTimeout(() => songInputRef.current?.focus(), 0);
-    setTimeout(() => songInputRef.current?.focus(), 50);
-    setTimeout(() => songInputRef.current?.focus(), 150);
+
     increment();
     try {
       await streamData(
-        `/metube/search/song?query=${encodeURIComponent(songName)}&artist=${encodeURIComponent(artistName)}`,
-        onAddSong,
+        `/metube/search/song?query=${encodeURIComponent(currentSongName)}&artist=${encodeURIComponent(currentArtistName)}`,
+        (song: any, tag: string, artist?: string) => {
+          if (song.search_result === 'NOT_FOUND') {
+            onAddSong(
+              {
+                title: currentSongName,
+                artist_names: [currentArtistName],
+                search_result: 'not_found',
+              },
+              'No encontradas',
+              currentArtistName
+            );
+            return;
+          }
+          onAddSong(song, tag, artist);
+        },
         undefined,
-        tagName,
-        artistName
+        currentTagName,
+        currentArtistName
       );
     } catch (error) {
       console.error('Error searching song:', error);
