@@ -1,4 +1,4 @@
-import { Clock, Trash2, GripVertical } from 'lucide-react';
+import { Clock, Trash2, GripVertical, Play } from 'lucide-react';
 import { Button } from './ui/button';
 import { HierarchicalSong } from '../types/api';
 
@@ -63,6 +63,19 @@ export function SongItem({ song, onDelete, onMove, provided }: SongItemProps) {
         
         {/* Actions - 1 column */}
         <div className="col-span-1 flex items-center justify-end gap-1 opacity-100 transition-opacity">
+          {song.ids?.[0] && (
+            <Button
+              size="sm"
+              variant="ghost"
+              asChild
+              className="h-6 w-6 p-0 text-primary hover:text-primary"
+              title="Abrir en YouTube"
+            >
+              <a href={`https://www.youtube.com/watch?v=${song.ids[0]}`} target="_blank" rel="noopener noreferrer">
+                <Play className="h-3 w-3" />
+              </a>
+            </Button>
+          )}
           <Button
             size="sm"
             variant="ghost"

@@ -7,6 +7,7 @@ import { ArtistSearch } from './ArtistSearch';
 import { SongSearch } from './SongSearch';
 import { UrlSearch } from './UrlSearch';
 import { PromptSearch } from './PromptSearch';
+import { BulkSearch } from './BulkSearch';
 import { SearchType } from '../types/api';
 
 interface RequestBuilderProps {
@@ -28,6 +29,8 @@ export function RequestBuilder({ onAddSong, onStreamEvent, existingTags }: Reque
         return <UrlSearch onAddSong={onAddSong} existingTags={existingTags} />;
       case 'prompt':
         return <PromptSearch onAddSong={onAddSong} existingTags={existingTags} />;
+      case 'bulk':
+        return <BulkSearch onAddSong={onAddSong} />;
       default:
         return null;
     }
@@ -49,6 +52,7 @@ export function RequestBuilder({ onAddSong, onStreamEvent, existingTags }: Reque
               <SelectItem value="song">Búsqueda por Canción</SelectItem>
               <SelectItem value="url">Búsqueda por URL</SelectItem>
               <SelectItem value="prompt">Búsqueda por Prompt</SelectItem>
+              <SelectItem value="bulk">Carga por Lote</SelectItem>
             </SelectContent>
           </Select>
         </div>

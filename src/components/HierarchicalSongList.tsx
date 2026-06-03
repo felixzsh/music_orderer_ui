@@ -1,9 +1,16 @@
-import { useState, useEffect } from 'react';
-import { ChevronDown, ChevronRight, Music, User, Hash, Trash2 } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { ChevronDown, ChevronRight, Music, User, Hash, Trash2, ArrowUp, ArrowDown } from 'lucide-react';
 import { Button } from './ui/button';
 import { SongItem } from './SongItem';
 import { SongGroup, HierarchicalSong } from '../types/api';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
+
+type SortKey = 'title' | 'artist' | 'duration' | 'views';
+
+interface GroupSort {
+  key: SortKey;
+  asc: boolean;
+}
 
 interface HierarchicalSongListProps {
   songGroups: { [key: string]: SongGroup };
@@ -12,8 +19,40 @@ interface HierarchicalSongListProps {
   onDeleteGroup: (groupName: string) => void;
 }
 
+function sortSongs(songs: HierarchicalSong[], sort: GroupSort): HierarchicalSong[] {
+  return [...songs].sort((a, b) => {
+    let cmp = 0;
+    switch (sort.key) {
+      case 'title':
+        cmp = a.title.localeCompare(b.title);
+        break;
+      case 'artist':
+        cmp = (a.artist_names?.[0] || '').localeCompare(b.artist_names?.[0] || '');
+        break;
+      case 'duration':
+        cmp = (a.duration ?? 0) - (b.duration ?? 0);
+        break;
+      case 'views':
+        cmp = (a.views ?? 0) - (b.views ?? 0);
+        break;
+    }
+    return sort.asc ? cmp : -cmp;
+  });
+}
+
 export function HierarchicalSongList({ songGroups, onDeleteSong, onMoveSong, onDeleteGroup }: HierarchicalSongListProps) {
   const [expandedGroups, setExpandedGroups] = useState<{ [key: string]: boolean }>({});
+  const [sortConfig, setSortConfig] = useState<{ [key: string]: GroupSort }>({});
+
+  const toggleSort = useCallback((groupName: string, key: SortKey) => {
+    setSortConfig(prev => {
+      const current = prev[groupName];
+      if (current?.key === key) {
+        return { ...prev, [groupName]: { key, asc: !current.asc } };
+      }
+      return { ...prev, [groupName]: { key, asc: true } };
+    });
+  }, []);
 
   // Sincroniza el estado de expansión con los grupos recibidos
   useEffect(() => {
@@ -104,33 +143,83 @@ export function HierarchicalSongList({ songGroups, onDeleteSong, onMoveSong, onD
 
               {/* Group Content */}
               {isGroupExpanded && (
-                <Droppable droppableId={groupName}>
-                  {(provided) => (
-                    <div
-                      ref={provided.innerRef}
-                      {...provided.droppableProps}
-                      className="px-3 pb-3"
-                    >
-                      {group.songs.map((song, index) => (
-                        <Draggable
-                          key={song.id || `${groupName}-${index}`}
-                          draggableId={song.id || `${groupName}-${index}`}
-                          index={index}
-                        >
-                          {(provided) => (
-                            <SongItem
-                              song={song}
-                              onDelete={onDeleteSong}
-                              onMove={onMoveSong}
-                              provided={provided}
-                            />
-                          )}
-                        </Draggable>
-                      ))}
-                      {provided.placeholder}
+                <>
+                  {/* Column Headers */}
+                  <div className="flex items-center gap-3 px-3 pb-1 text-xs text-muted-foreground font-medium">
+                    <div className="w-8 flex-shrink-0" />
+                    <div className="flex-1 min-w-0 grid grid-cols-12 gap-2">
+                      <button
+                        className="col-span-4 flex items-center gap-1 hover:text-foreground text-left"
+                        onClick={() => toggleSort(groupName, 'title')}
+                      >
+                        Título
+                        {sortConfig[groupName]?.key === 'title' && (
+                          sortConfig[groupName].asc ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />
+                        )}
+                      </button>
+                      <button
+                        className="col-span-3 flex items-center gap-1 hover:text-foreground text-left"
+                        onClick={() => toggleSort(groupName, 'artist')}
+                      >
+                        Artista
+                        {sortConfig[groupName]?.key === 'artist' && (
+                          sortConfig[groupName].asc ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />
+                        )}
+                      </button>
+                      <button
+                        className="col-span-2 flex items-center gap-1 hover:text-foreground"
+                        onClick={() => toggleSort(groupName, 'duration')}
+                      >
+                        Duración
+                        {sortConfig[groupName]?.key === 'duration' && (
+                          sortConfig[groupName].asc ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />
+                        )}
+                      </button>
+                      <button
+                        className="col-span-2 flex items-center gap-1 hover:text-foreground justify-end"
+                        onClick={() => toggleSort(groupName, 'views')}
+                      >
+                        Vistas
+                        {sortConfig[groupName]?.key === 'views' && (
+                          sortConfig[groupName].asc ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />
+                        )}
+                      </button>
+                      <div className="col-span-1" />
                     </div>
-                  )}
-                </Droppable>
+                  </div>
+
+                  <Droppable droppableId={groupName}>
+                    {(provided) => (
+                      <div
+                        ref={provided.innerRef}
+                        {...provided.droppableProps}
+                        className="px-3 pb-3"
+                      >
+                        {(() => {
+                          const sort = sortConfig[groupName];
+                          const sortedSongs = sort ? sortSongs(group.songs, sort) : group.songs;
+                          return sortedSongs.map((song, index) => (
+                            <Draggable
+                              key={song.id || `${groupName}-${index}`}
+                              draggableId={song.id || `${groupName}-${index}`}
+                              index={index}
+                            >
+                              {(provided) => (
+                                <SongItem
+                                  song={song}
+                                  onDelete={onDeleteSong}
+                                  onMove={onMoveSong}
+                                  provided={provided}
+                                />
+                              )}
+                            </Draggable>
+                          ));
+                        })()}
+                        {provided.placeholder}
+                      </div>
+                    )}
+                  </Droppable>
+                </>
               )}
             </div>
           );

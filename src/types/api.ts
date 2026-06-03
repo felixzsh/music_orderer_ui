@@ -66,4 +66,4 @@ export interface SongGroup {
   count: number; // Para mostrar conteo
 }
 
-export type SearchType = 'artist' | 'song' | 'url' | 'prompt';
+export type SearchType = 'artist' | 'song' | 'url' | 'prompt' | 'bulk';

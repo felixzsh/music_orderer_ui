@@ -1,0 +1,114 @@
+import { useState, useContext } from 'react';
+import { PendingRequestsContext } from './PendingRequestsContext';
+import { List, Search } from 'lucide-react';
+import { Button } from './ui/button';
+import { Textarea } from './ui/textarea';
+import { Label } from './ui/label';
+import { API_BASE_URL } from '../constants/api';
+
+interface BulkSearchProps {
+  onAddSong: (song: any, tagName: string, artistName?: string) => void;
+}
+
+export function BulkSearch({ onAddSong }: BulkSearchProps) {
+  const [text, setText] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [progress, setProgress] = useState('');
+  const { increment, decrement } = useContext(PendingRequestsContext);
+
+  const handleSubmit = async () => {
+    if (!text.trim()) return;
+
+    const lines = text.split('\n').filter(l => l.trim());
+    setIsLoading(true);
+    setProgress(`0 / ${lines.length}`);
+    increment();
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      const separatorIndex = line.lastIndexOf(' - ');
+
+      if (separatorIndex === -1) continue;
+
+      const songTitle = line.substring(0, separatorIndex).trim();
+      const artist = line.substring(separatorIndex + 3).trim();
+
+      if (!songTitle || !artist) continue;
+
+      setProgress(`${i + 1} / ${lines.length}: ${songTitle}`);
+
+      try {
+        const response = await fetch(
+          `${API_BASE_URL}/metube/search/song?query=${encodeURIComponent(songTitle)}&artist=${encodeURIComponent(artist)}`
+        );
+        const data = await response.json();
+
+        if (data.search_result === 'NOT_FOUND') {
+          onAddSong(
+            {
+              title: songTitle,
+              artist_names: [artist],
+              search_result: 'not_found',
+            },
+            'No encontradas',
+            artist
+          );
+        } else {
+          onAddSong(data, 'todas', artist);
+        }
+      } catch {
+        onAddSong(
+          {
+            title: songTitle,
+            artist_names: [artist],
+            search_result: 'not_found',
+          },
+          'No encontradas',
+          artist
+        );
+      }
+    }
+
+    decrement();
+    setIsLoading(false);
+    setProgress('');
+    setText('');
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center gap-2 mb-4">
+        <List className="h-5 w-5" />
+        <h3>Carga por Lote</h3>
+      </div>
+      <div className="space-y-3">
+        <div>
+          <Label htmlFor="bulkText">
+            Lista de canciones (una por línea, formato: <code>canción - artista</code>)
+          </Label>
+          <Textarea
+            id="bulkText"
+            placeholder={`ej: Bohemian Rhapsody - Queen\nBillie Jean - Michael Jackson\nImagine - John Lennon`}
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            rows={10}
+          />
+        </div>
+
+        {progress && (
+          <p className="text-sm text-muted-foreground">{progress}</p>
+        )}
+
+        <Button
+          type="button"
+          onClick={handleSubmit}
+          disabled={!text.trim() || isLoading}
+          className="w-full"
+        >
+          <Search className="h-4 w-4 mr-2" />
+          {isLoading ? 'Buscando...' : 'Buscar y Agregar Todas'}
+        </Button>
+      </div>
+    </div>
+  );
+}
