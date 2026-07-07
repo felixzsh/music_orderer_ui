@@ -45,6 +45,7 @@ export const ProtectedOrdererRoute = () => {
         const result: ValidationResponse = await response.json();
 
         if (result.valid && result.user) {
+          localStorage.setItem('auth_token', token);
           setUserData(result.user);
           setValidationState('valid');
         } else {

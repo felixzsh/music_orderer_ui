@@ -29,7 +29,7 @@ export function UrlSearch({ onAddSong, existingTags }: UrlSearchProps) {
     increment();
     try {
       await streamData(
-        `/search/url?url=${encodeURIComponent(url)}`,
+        `/api/search/url?url=${encodeURIComponent(url)}`,
         onAddSong,
         undefined,
         tagName,

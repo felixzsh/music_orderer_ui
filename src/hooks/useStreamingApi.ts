@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { Song, StreamEvent } from '../types/api';
 import { API_BASE_URL } from '../constants/api';
+import { authHeaders } from '../utils/headers';
 
 export function useStreamingApi() {
   const streamData = useCallback(async (
@@ -12,7 +13,7 @@ export function useStreamingApi() {
   ) => {
     try {
       const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
-      const response = await fetch(url);
+      const response = await fetch(url, { headers: authHeaders() });
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       
       const reader = response.body?.getReader();
