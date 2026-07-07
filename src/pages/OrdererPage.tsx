@@ -7,6 +7,7 @@ import { useMobile } from '../hooks/useMobile';
 import { useDarkMode } from '../hooks/useDarkMode';
 import { SongGroup, HierarchicalSong, Song, StreamEvent } from '../types/api';
 import { API_BASE_URL } from '../constants/api';
+import { authHeaders } from '../utils/headers';
 
 interface UserData {
   phone: string;
@@ -204,9 +205,7 @@ export const OrdererPage = ({ userData }: OrdererPageProps) => {
       
       const response = await fetch(`${API_BASE_URL}/api/order/create`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: authHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({
           phoneNumber: userData.phone,
           deliveryType: deliveryType,
