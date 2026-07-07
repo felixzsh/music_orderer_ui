@@ -29,7 +29,7 @@ export function PromptSearch({ onAddSong, existingTags }: PromptSearchProps) {
     increment();
     try {
       await streamData(
-        `/metube/search/prompt?prompt=${encodeURIComponent(prompt)}`,
+        `/api/metube/search/prompt?prompt=${encodeURIComponent(prompt)}`,
         onAddSong,
         undefined,
         tagName,

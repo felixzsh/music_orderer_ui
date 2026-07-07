@@ -64,7 +64,7 @@ export function SongSearch({ onAddSong, existingTags }: SongSearchProps) {
     increment();
     try {
       await streamData(
-        `/metube/search/song?query=${encodeURIComponent(currentSongName)}&artist=${encodeURIComponent(currentArtistName)}`,
+        `/api/metube/search/song?query=${encodeURIComponent(currentSongName)}&artist=${encodeURIComponent(currentArtistName)}`,
         (song: any, tag: string, artist?: string) => {
           if (song.search_result === 'NOT_FOUND') {
             onAddSong(

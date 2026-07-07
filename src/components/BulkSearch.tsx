@@ -5,6 +5,7 @@ import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
 import { Label } from './ui/label';
 import { API_BASE_URL } from '../constants/api';
+import { authHeaders } from '../utils/headers';
 
 interface BulkSearchProps {
   onAddSong: (song: any, tagName: string, artistName?: string) => void;
@@ -39,7 +40,8 @@ export function BulkSearch({ onAddSong }: BulkSearchProps) {
 
       try {
         const response = await fetch(
-          `${API_BASE_URL}/metube/search/song?query=${encodeURIComponent(songTitle)}&artist=${encodeURIComponent(artist)}`
+          `${API_BASE_URL}/api/metube/search/song?query=${encodeURIComponent(songTitle)}&artist=${encodeURIComponent(artist)}`,
+          { headers: authHeaders() }
         );
         const data = await response.json();
 

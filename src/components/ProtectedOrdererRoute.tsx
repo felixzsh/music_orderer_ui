@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { OrdererPage } from '../pages/OrdererPage';
 import { BlankPage } from './BlankPage';
 import { API_BASE_URL } from '../constants/api';
+import { authHeaders } from '../utils/headers';
 
 interface UserData {
   phone: string;
@@ -37,9 +38,7 @@ export const ProtectedOrdererRoute = () => {
       try {
         const response = await fetch(`${API_BASE_URL}/api/auth/validate-token`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: authHeaders({ 'Content-Type': 'application/json' }),
           body: JSON.stringify({ token }),
         });
 

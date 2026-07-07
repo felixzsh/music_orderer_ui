@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { SearchedArtist, Artist } from '../types/api';
 import { useStreamingApi } from '../hooks/useStreamingApi';
 import { API_BASE_URL } from '../constants/api';
+import { authHeaders } from '../utils/headers';
 
 interface ArtistSearchProps {
   onAddSong: (song: any, tagName: string, artistName?: string) => void;
@@ -47,7 +48,7 @@ export function ArtistSearch({ onAddSong, onStreamEvent }: ArtistSearchProps) {
       }
 
       try {
-        const response = await fetch(`${API_BASE_URL}/metube/search/artist?artist_name=${encodeURIComponent(searchQuery)}`);
+        const response = await fetch(`${API_BASE_URL}/api/metube/search/artist?artist_name=${encodeURIComponent(searchQuery)}`, { headers: authHeaders() });
         const reader = response.body?.getReader();
         if (!reader) return;
 
@@ -93,14 +94,14 @@ export function ArtistSearch({ onAddSong, onStreamEvent }: ArtistSearchProps) {
 
     try {
       await streamData(
-        `/metube/artist?browse_id=${artist.browse_id}`,
+        `/api/metube/artist?browse_id=${artist.browse_id}`,
         () => {},
         undefined,
         '',
         ''
       );
       // Simulamos la respuesta del artista (deberías actualizar esto con streaming real)
-      const response = await fetch(`${API_BASE_URL}/metube/artist?browse_id=${artist.browse_id}`);
+      const response = await fetch(`${API_BASE_URL}/api/metube/artist?browse_id=${artist.browse_id}`, { headers: authHeaders() });
       const reader = response.body?.getReader();
       if (!reader) return;
 
@@ -143,7 +144,7 @@ export function ArtistSearch({ onAddSong, onStreamEvent }: ArtistSearchProps) {
 
     try {
       await streamData(
-        `/metube/artist/hits?browse_id=${artistDetails.playlist_id}`,
+        `/api/metube/artist/hits?browse_id=${artistDetails.playlist_id}`,
         onAddSong,
         onStreamEvent,
         selectedArtist.result_name,
@@ -159,7 +160,7 @@ export function ArtistSearch({ onAddSong, onStreamEvent }: ArtistSearchProps) {
 
     try {
       await streamData(
-        `/metube/artist/discography?browse_id=${artistDetails.albums_id}&params=${encodeURIComponent(artistDetails.albums_params)}`,
+        `/api/metube/artist/discography?browse_id=${artistDetails.albums_id}&params=${encodeURIComponent(artistDetails.albums_params)}`,
         onAddSong,
         undefined,
         selectedArtist.result_name,
