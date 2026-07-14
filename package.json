@@ -56,6 +56,7 @@
     },
     "scripts": {
         "dev": "vite",
-        "build": "vite build"
+        "build": "vite build",
+        "start": "nginx -p $(pwd) -c nginx.dev.conf -s quit 2>/dev/null; rm -f /tmp/nginx-music-orderer-ui.pid; VITE_API_BASE_URL=https://dev.bardomusic.uk npm run build && mkdir -p /tmp/nginx-music-orderer-ui && nginx -p $(pwd) -c nginx.dev.conf -g 'daemon off;'"
     }
 }
