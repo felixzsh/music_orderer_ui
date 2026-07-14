@@ -1,0 +1,10 @@
+node_modules
+.vite
+dist
+.env
+.git
+.gitignore
+Dockerfile
+*.md
+nginx.dev.conf
+deploy.sh

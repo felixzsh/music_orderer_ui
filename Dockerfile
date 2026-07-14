@@ -9,7 +9,7 @@ RUN corepack enable && pnpm install --frozen-lockfile
 COPY . .
 ARG VITE_API_BASE_URL
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
-RUN npm run build
+RUN pnpm run build
 
 # ============================================================
 # ETAPA 2: SERVIDOR NGINX ALPINE (Solo sirve archivos)
