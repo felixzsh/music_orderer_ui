@@ -67,3 +67,9 @@ export interface SongGroup {
 }
 
 export type SearchType = 'artist' | 'song' | 'url' | 'prompt' | 'bulk';
+
+export interface Client {
+  id: number;
+  name: string;
+  phoneNumber: string;
+}
