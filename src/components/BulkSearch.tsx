@@ -1,4 +1,4 @@
-import { useState, useContext } from 'react';
+import { useState, useContext, useRef } from 'react';
 import { PendingRequestsContext } from './PendingRequestsContext';
 import { List, Search } from 'lucide-react';
 import { Button } from './ui/button';
@@ -13,16 +13,19 @@ interface BulkSearchProps {
 
 export function BulkSearch({ onAddSong }: BulkSearchProps) {
   const [text, setText] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState('');
+  const activeCount = useRef(0);
+  const [hasActive, setHasActive] = useState(false);
   const { increment, decrement } = useContext(PendingRequestsContext);
 
   const handleSubmit = async () => {
     if (!text.trim()) return;
 
     const lines = text.split('\n').filter(l => l.trim());
-    setIsLoading(true);
+    setText('');
     setProgress(`0 / ${lines.length}`);
+    activeCount.current++;
+    setHasActive(true);
     increment();
 
     for (let i = 0; i < lines.length; i++) {
@@ -72,9 +75,11 @@ export function BulkSearch({ onAddSong }: BulkSearchProps) {
     }
 
     decrement();
-    setIsLoading(false);
-    setProgress('');
-    setText('');
+    activeCount.current--;
+    if (activeCount.current === 0) {
+      setHasActive(false);
+      setProgress('');
+    }
   };
 
   return (
@@ -104,11 +109,11 @@ export function BulkSearch({ onAddSong }: BulkSearchProps) {
         <Button
           type="button"
           onClick={handleSubmit}
-          disabled={!text.trim() || isLoading}
+          disabled={!text.trim()}
           className="w-full flex-shrink-0"
         >
           <Search className="h-4 w-4 mr-2" />
-          {isLoading ? 'Buscando...' : 'Buscar y Agregar Todas'}
+          {hasActive ? 'Buscando...' : 'Buscar y Agregar Todas'}
         </Button>
       </div>
     </div>
