@@ -38,7 +38,7 @@ export function SongPreview({
   const [isDeliveryDialogOpen, setIsDeliveryDialogOpen] = useState(false);
   const [deliveryType, setDeliveryType] = useState<'DIGITAL_LINK' | 'PHYSICAL_USB'>('DIGITAL_LINK');
   return (
-    <Card className="h-full flex flex-col">
+    <Card className="h-full flex flex-col overflow-hidden">
       <CardHeader className="flex-shrink-0">
         <CardTitle className="flex items-center justify-between">
           <span>Preview</span>
@@ -52,8 +52,8 @@ export function SongPreview({
           </span>
         </CardTitle>
       </CardHeader>
-      <CardContent className="flex-1 flex flex-col min-h-0">
-        <ScrollArea className="flex-1">
+      <CardContent className="flex-1 flex flex-col min-h-0 overflow-hidden">
+        <ScrollArea className="flex-1 min-h-0">
           <HierarchicalSongList
             songGroups={songGroups}
             onDeleteSong={onDeleteSong}
@@ -62,7 +62,7 @@ export function SongPreview({
           />
         </ScrollArea>
         {totalSongs > 0 && (
-          <div className="mt-4 pt-4 border-t">
+          <div className="flex-shrink-0 mt-4 pt-4 border-t">
             <Button 
               onClick={() => {
                 if (phoneNumber.startsWith('521899')) {

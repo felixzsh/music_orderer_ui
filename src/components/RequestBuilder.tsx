@@ -37,8 +37,8 @@ export function RequestBuilder({ onAddSong, onStreamEvent, existingTags }: Reque
   };
 
   return (
-    <Card className="h-full">
-      <CardHeader>
+    <Card className="h-full flex flex-col overflow-hidden">
+      <CardHeader className="flex-shrink-0">
         <CardTitle>Request Builder</CardTitle>
         <div className="flex items-center gap-3">
           <Label className="text-sm whitespace-nowrap">Tipo de búsqueda:</Label>
@@ -57,7 +57,7 @@ export function RequestBuilder({ onAddSong, onStreamEvent, existingTags }: Reque
           </Select>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="flex-1 min-h-0 overflow-hidden">
         {renderSearchComponent()}
       </CardContent>
     </Card>

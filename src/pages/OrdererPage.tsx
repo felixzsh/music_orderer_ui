@@ -320,9 +320,9 @@ export const OrdererPage = ({ userData }: OrdererPageProps) => {
         </Button>
       </div>
 
-      <div className="flex-1 flex">
+      <div className="flex-1 flex overflow-hidden">
         {/* Left Panel - Request Builder */}
-        <div className="w-1/2 p-4 border-r">
+        <div className="w-1/2 p-4 border-r h-full">
           <RequestBuilder
             onAddSong={addSongToGroup}
             onStreamEvent={handleStreamEvent}
@@ -331,7 +331,7 @@ export const OrdererPage = ({ userData }: OrdererPageProps) => {
         </div>
 
         {/* Right Panel - Song Preview */}
-        <div className="w-1/2 p-4">
+        <div className="w-1/2 p-4 h-full">
           <SongPreview
             songGroups={songGroups}
             totalSongs={totalSongs}

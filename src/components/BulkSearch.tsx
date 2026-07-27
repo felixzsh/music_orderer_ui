@@ -78,14 +78,14 @@ export function BulkSearch({ onAddSong }: BulkSearchProps) {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-2 mb-4">
+    <div className="h-full flex flex-col min-h-0">
+      <div className="flex items-center gap-2 mb-4 flex-shrink-0">
         <List className="h-5 w-5" />
         <h3>Carga por Lote</h3>
       </div>
-      <div className="space-y-3">
-        <div>
-          <Label htmlFor="bulkText">
+      <div className="flex-1 flex flex-col min-h-0 space-y-3">
+        <div className="flex-1 flex flex-col min-h-0">
+          <Label htmlFor="bulkText" className="flex-shrink-0">
             Lista de canciones (una por línea, formato: <code>canción - artista</code>)
           </Label>
           <Textarea
@@ -93,19 +93,19 @@ export function BulkSearch({ onAddSong }: BulkSearchProps) {
             placeholder={`ej: Bohemian Rhapsody - Queen\nBillie Jean - Michael Jackson\nImagine - John Lennon`}
             value={text}
             onChange={(e) => setText(e.target.value)}
-            rows={10}
+            className="flex-1 min-h-0 mt-2 resize-none"
           />
         </div>
 
         {progress && (
-          <p className="text-sm text-muted-foreground">{progress}</p>
+          <p className="flex-shrink-0 text-sm text-muted-foreground">{progress}</p>
         )}
 
         <Button
           type="button"
           onClick={handleSubmit}
           disabled={!text.trim() || isLoading}
-          className="w-full"
+          className="w-full flex-shrink-0"
         >
           <Search className="h-4 w-4 mr-2" />
           {isLoading ? 'Buscando...' : 'Buscar y Agregar Todas'}

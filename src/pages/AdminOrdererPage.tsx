@@ -342,8 +342,8 @@ export function AdminOrdererPage() {
         {clientHeader}
       </div>
 
-      <div className="flex-1 flex">
-        <div className="w-1/2 p-4 border-r">
+      <div className="flex-1 flex overflow-hidden">
+        <div className="w-1/2 p-4 border-r h-full">
           <RequestBuilder
             onAddSong={addSongToGroup}
             onStreamEvent={handleStreamEvent}
@@ -351,7 +351,7 @@ export function AdminOrdererPage() {
           />
         </div>
 
-        <div className="w-1/2 p-4">
+        <div className="w-1/2 p-4 h-full">
           <SongPreview
             songGroups={songGroups}
             totalSongs={totalSongs}
