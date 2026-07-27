@@ -17,6 +17,8 @@ interface HierarchicalSongListProps {
   onDeleteSong: (songId: string) => void;
   onMoveSong: (songId: string, sourceTag: string, destTag: string, newIndex: number) => void;
   onDeleteGroup: (groupName: string) => void;
+  onReSearch: (songId: string) => void;
+  onUpdateSong: (songId: string, updates: { title?: string; artist?: string }) => void;
 }
 
 function sortSongs(songs: HierarchicalSong[], sort: GroupSort): HierarchicalSong[] {
@@ -40,7 +42,7 @@ function sortSongs(songs: HierarchicalSong[], sort: GroupSort): HierarchicalSong
   });
 }
 
-export function HierarchicalSongList({ songGroups, onDeleteSong, onMoveSong, onDeleteGroup }: HierarchicalSongListProps) {
+export function HierarchicalSongList({ songGroups, onDeleteSong, onMoveSong, onDeleteGroup, onReSearch, onUpdateSong }: HierarchicalSongListProps) {
   const [expandedGroups, setExpandedGroups] = useState<{ [key: string]: boolean }>({});
   const [sortConfig, setSortConfig] = useState<{ [key: string]: GroupSort }>({});
 
@@ -209,6 +211,8 @@ export function HierarchicalSongList({ songGroups, onDeleteSong, onMoveSong, onD
                                   song={song}
                                   onDelete={onDeleteSong}
                                   onMove={onMoveSong}
+                                  onReSearch={onReSearch}
+                                  onUpdateSong={onUpdateSong}
                                   provided={provided}
                                 />
                               )}

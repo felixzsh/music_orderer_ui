@@ -22,6 +22,8 @@ interface SongPreviewProps {
   onMoveSong: (songId: string, sourceTag: string, destTag: string, newIndex: number) => void;
   onSendRequest: (deliveryType: 'DIGITAL_LINK' | 'PHYSICAL_USB') => void;
   onDeleteGroup: (groupName: string) => void;
+  onReSearch: (songId: string) => void;
+  onUpdateSong: (songId: string, updates: { title?: string; artist?: string }) => void;
   phoneNumber: string;
 }
 
@@ -32,6 +34,8 @@ export function SongPreview({
   onMoveSong, 
   onSendRequest, 
   onDeleteGroup,
+  onReSearch,
+  onUpdateSong,
   phoneNumber
 }: SongPreviewProps) {
   const { pending, cancelAll } = useContext(PendingRequestsContext);
@@ -66,6 +70,8 @@ export function SongPreview({
             onDeleteSong={onDeleteSong}
             onMoveSong={onMoveSong}
             onDeleteGroup={onDeleteGroup}
+            onReSearch={onReSearch}
+            onUpdateSong={onUpdateSong}
           />
         </ScrollArea>
         {totalSongs > 0 && (

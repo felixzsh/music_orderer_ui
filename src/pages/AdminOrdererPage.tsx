@@ -103,7 +103,8 @@ export function AdminOrdererPage() {
       ...song,
       id: song.id || generateSongId(),
       tagName,
-      artistName: artistName || tagName
+      artistName: artistName || tagName,
+      createdAt: Date.now(),
     };
 
     setSongGroups(prev => {
@@ -159,6 +160,69 @@ export function AdminOrdererPage() {
       addSongToGroup(event.song, tagName, artistName || tagName);
     }
   }, [addSongToGroup]);
+
+  const replaceSongInPlace = useCallback((songId: string, replacement: Song) => {
+    setSongGroups(prev => {
+      const newGroups = { ...prev };
+      for (const groupName of Object.keys(newGroups)) {
+        const group = newGroups[groupName];
+        const idx = group.songs.findIndex(s => s.id === songId);
+        if (idx !== -1) {
+          const old = group.songs[idx];
+          group.songs[idx] = {
+            ...replacement,
+            id: old.id,
+            tagName: old.tagName,
+            artistName: old.artistName,
+            createdAt: old.createdAt,
+          };
+          break;
+        }
+      }
+      return newGroups;
+    });
+  }, []);
+
+  const handleReSearch = useCallback(async (songId: string) => {
+    const allSongs = Object.values(songGroups).flatMap(g => g.songs);
+    const song = allSongs.find(s => s.id === songId);
+    if (!song) return;
+
+    const title = song.title;
+    const artist = song.artist_names?.[0] || '';
+    if (!artist) return;
+
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/metube/search/song?query=${encodeURIComponent(title)}&artist=${encodeURIComponent(artist)}`,
+        { headers: authHeaders() }
+      );
+      const data = await response.json();
+      if (data.search_result !== 'NOT_FOUND') {
+        replaceSongInPlace(songId, data);
+      }
+    } catch {
+      // Silently fail
+    }
+  }, [songGroups, replaceSongInPlace]);
+
+  const handleUpdateSong = useCallback((songId: string, updates: { title?: string; artist?: string }) => {
+    setSongGroups(prev => {
+      const newGroups = { ...prev };
+      for (const groupName of Object.keys(newGroups)) {
+        const group = newGroups[groupName];
+        const idx = group.songs.findIndex(s => s.id === songId);
+        if (idx !== -1) {
+          const song = { ...group.songs[idx] };
+          if (updates.title !== undefined) song.title = updates.title;
+          if (updates.artist !== undefined) song.artist_names = [updates.artist];
+          group.songs[idx] = song;
+          break;
+        }
+      }
+      return newGroups;
+    });
+  }, []);
 
   const handleDeleteSong = useCallback((songId: string) => {
     setSongGroups(prev => {
@@ -222,7 +286,7 @@ export function AdminOrdererPage() {
       const orderedGroups = Object.fromEntries(
         Object.entries(songGroups).map(([key, group]) => [
           key,
-          { ...group, songs: [...group.songs].reverse() }
+          { ...group, songs: [...group.songs].sort((a, b) => a.createdAt - b.createdAt) }
         ])
       );
 
@@ -327,6 +391,8 @@ export function AdminOrdererPage() {
               onMoveSong={handleMoveSong}
               onSendRequest={handleSendRequest}
               onDeleteGroup={handleDeleteGroup}
+              onReSearch={handleReSearch}
+              onUpdateSong={handleUpdateSong}
               phoneNumber={selectedClient?.phoneNumber || ''}
             />
           )}
@@ -359,6 +425,8 @@ export function AdminOrdererPage() {
             onMoveSong={handleMoveSong}
             onSendRequest={handleSendRequest}
             onDeleteGroup={handleDeleteGroup}
+            onReSearch={handleReSearch}
+            onUpdateSong={handleUpdateSong}
             phoneNumber={selectedClient?.phoneNumber || ''}
           />
         </div>

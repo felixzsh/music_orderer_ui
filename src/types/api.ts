@@ -53,8 +53,9 @@ export interface StreamEvent {
 }
 
 export interface HierarchicalSong extends Song {
-  tagName: string; // Cambiado de groupName
+  tagName: string;
   artistName: string;
+  createdAt: number;
 }
 
 // Simplificada - solo 2 niveles: TagName → Canciones
