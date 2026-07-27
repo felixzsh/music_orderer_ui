@@ -1,9 +1,10 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Smartphone, Monitor, ToggleLeft, ToggleRight, Sun, Moon } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { RequestBuilder } from '../components/RequestBuilder';
 import { SongPreview } from '../components/SongPreview';
+import { PendingRequestsContext } from '../components/PendingRequestsContext';
 import { useMobile } from '../hooks/useMobile';
 import { useDarkMode } from '../hooks/useDarkMode';
 import { SongGroup, HierarchicalSong, Song, StreamEvent, Client } from '../types/api';
@@ -22,6 +23,7 @@ export function AdminOrdererPage() {
     const saved = localStorage.getItem('musicOrderer_songGroups');
     return saved ? JSON.parse(saved) : {};
   });
+  const { addSkip } = useContext(PendingRequestsContext);
   const [clients, setClients] = useState<Client[]>([]);
   const [selectedClientId, setSelectedClientId] = useState<string>('');
   const [loadingClients, setLoadingClients] = useState(true);
@@ -114,6 +116,7 @@ export function AdminOrdererPage() {
           Object.values(prev).flatMap(g => g.songs.flatMap(s => s.ids || []))
         );
         if (newSongIds.some(id => existingIds.has(id))) {
+          addSkip({ title: song.title, artist: artistName || tagName });
           return prev;
         }
       }
@@ -135,7 +138,7 @@ export function AdminOrdererPage() {
 
       return newGroups;
     });
-  }, [generateSongId]);
+  }, [generateSongId, addSkip]);
 
   const handleStreamEvent = useCallback((
     event: StreamEvent,

@@ -38,7 +38,7 @@ export function SongPreview({
   onUpdateSong,
   phoneNumber
 }: SongPreviewProps) {
-  const { pending, cancelAll } = useContext(PendingRequestsContext);
+  const { pending, cancelAll, skipCount, resetSkips } = useContext(PendingRequestsContext);
   const [isDeliveryDialogOpen, setIsDeliveryDialogOpen] = useState(false);
   const [deliveryType, setDeliveryType] = useState<'DIGITAL_LINK' | 'PHYSICAL_USB'>('DIGITAL_LINK');
   return (
@@ -58,6 +58,16 @@ export function SongPreview({
                 >
                   <X className="h-3 w-3" />
                 </button>
+              </span>
+            )}
+            {skipCount > 0 && (
+              <span
+                className="ml-2 px-2 py-0.5 rounded bg-orange-100 text-orange-800 text-xs font-semibold flex items-center gap-1 cursor-pointer hover:bg-orange-200 transition-colors"
+                onClick={resetSkips}
+                title="Limpiar contador de duplicados"
+              >
+                duplicados: {skipCount}
+                <X className="h-3 w-3" />
               </span>
             )}
           </span>

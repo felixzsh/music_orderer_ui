@@ -1,9 +1,18 @@
 import { useState, useContext, useRef } from 'react';
-import { PendingRequestsContext } from './PendingRequestsContext';
+import { toast } from 'sonner';
+import { PendingRequestsContext, SkippedItem } from './PendingRequestsContext';
 import { List, Search } from 'lucide-react';
 import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
 import { Label } from './ui/label';
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "./ui/alert-dialog";
 import { API_BASE_URL } from '../constants/api';
 import { authHeaders } from '../utils/headers';
 
@@ -11,13 +20,22 @@ interface BulkSearchProps {
   onAddSong: (song: any, tagName: string, artistName?: string) => void;
 }
 
+interface BatchResult {
+  lines: number;
+  found: number;
+  notFound: number;
+  errors: number;
+  skipped: SkippedItem[];
+}
+
 export function BulkSearch({ onAddSong }: BulkSearchProps) {
   const [text, setText] = useState('');
   const [progress, setProgress] = useState('');
   const activeCount = useRef(0);
   const [hasActive, setHasActive] = useState(false);
-  const { increment, decrement, signal } = useContext(PendingRequestsContext);
-
+  const { increment, decrement, signal, resetSkips, skippedItemsRef } = useContext(PendingRequestsContext);
+  const [batchResult, setBatchResult] = useState<BatchResult | null>(null);
+  const [showSummary, setShowSummary] = useState(false);
   const handleSubmit = async () => {
     if (!text.trim()) return;
 
@@ -27,6 +45,11 @@ export function BulkSearch({ onAddSong }: BulkSearchProps) {
     activeCount.current++;
     setHasActive(true);
     increment();
+    resetSkips();
+
+    let found = 0;
+    let notFound = 0;
+    let errors = 0;
 
     for (let i = 0; i < lines.length; i++) {
       if (signal.aborted) break;
@@ -52,28 +75,21 @@ export function BulkSearch({ onAddSong }: BulkSearchProps) {
 
         if (data.search_result === 'NOT_FOUND') {
           onAddSong(
-            {
-              title: songTitle,
-              artist_names: [artist],
-              search_result: 'not_found',
-            },
-            'No encontradas',
-            artist
+            { title: songTitle, artist_names: [artist], search_result: 'not_found' },
+            'No encontradas', artist
           );
+          notFound++;
         } else {
           onAddSong(data, 'todas', artist);
+          found++;
         }
       } catch (error: any) {
         if (error?.name === 'AbortError') break;
         onAddSong(
-          {
-            title: songTitle,
-            artist_names: [artist],
-            search_result: 'not_found',
-          },
-          'No encontradas',
-          artist
+          { title: songTitle, artist_names: [artist], search_result: 'not_found' },
+          'No encontradas', artist
         );
+        errors++;
       }
     }
 
@@ -82,6 +98,15 @@ export function BulkSearch({ onAddSong }: BulkSearchProps) {
     if (activeCount.current === 0) {
       setHasActive(false);
       setProgress('');
+    }
+
+    const skipped = [...skippedItemsRef.current];
+    if (skipped.length > 0 || notFound > 0 || errors > 0) {
+      setBatchResult({ lines: lines.length, found, notFound, errors, skipped });
+      setShowSummary(true);
+      toast.success(`Bulk completado: ${found} canciones, ${skipped.length} duplicados, ${notFound} no encontradas`, {
+        duration: 5000,
+      });
     }
   };
 
@@ -119,6 +144,36 @@ export function BulkSearch({ onAddSong }: BulkSearchProps) {
           {hasActive ? 'Buscando...' : 'Buscar y Agregar Todas'}
         </Button>
       </div>
+
+      <AlertDialog open={showSummary} onOpenChange={setShowSummary}>
+        <AlertDialogContent className="max-h-[80vh] flex flex-col">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Resumen del Bulk</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="text-sm space-y-2">
+                <p>
+                  {batchResult?.lines} líneas procesadas · {batchResult?.found} encontradas · {batchResult?.notFound} no encontradas · {batchResult?.errors} errores · {batchResult?.skipped.length} duplicados
+                </p>
+                {batchResult && batchResult.skipped.length > 0 && (
+                  <div className="mt-2">
+                    <p className="font-semibold text-destructive mb-1">Duplicados ({batchResult.skipped.length}):</p>
+                    <div className="max-h-60 overflow-y-auto border rounded p-2 space-y-0.5">
+                      {batchResult.skipped.map((item, i) => (
+                        <p key={i} className="text-xs truncate">
+                          <span className="font-medium">{item.title}</span> — {item.artist}
+                        </p>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <Button onClick={() => setShowSummary(false)}>Cerrar</Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

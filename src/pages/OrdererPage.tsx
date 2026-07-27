@@ -1,8 +1,9 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useContext } from 'react';
 import { Smartphone, Monitor, ToggleLeft, ToggleRight, Sun, Moon } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { RequestBuilder } from '../components/RequestBuilder';
 import { SongPreview } from '../components/SongPreview';
+import { PendingRequestsContext } from '../components/PendingRequestsContext';
 import { useMobile } from '../hooks/useMobile';
 import { useDarkMode } from '../hooks/useDarkMode';
 import { SongGroup, HierarchicalSong, Song, StreamEvent } from '../types/api';
@@ -25,6 +26,7 @@ export const OrdererPage = ({ userData }: OrdererPageProps) => {
     const saved = localStorage.getItem('musicOrderer_songGroups');
     return saved ? JSON.parse(saved) : {};
   });
+  const { addSkip } = useContext(PendingRequestsContext);
   useEffect(() => {
     localStorage.setItem('musicOrderer_songGroups', Object.keys(songGroups).length > 0 ? JSON.stringify(songGroups) : '');
   }, [songGroups]);
@@ -83,6 +85,7 @@ export const OrdererPage = ({ userData }: OrdererPageProps) => {
           Object.values(prev).flatMap(g => g.songs.flatMap(s => s.ids || []))
         );
         if (newSongIds.some(id => existingIds.has(id))) {
+          addSkip({ title: song.title, artist: artistName || tagName });
           return prev;
         }
       }
@@ -104,7 +107,7 @@ export const OrdererPage = ({ userData }: OrdererPageProps) => {
 
       return newGroups;
     });
-  }, [generateSongId]);
+  }, [generateSongId, addSkip]);
 
   const handleStreamEvent = useCallback((
     event: StreamEvent, 
