@@ -1,4 +1,4 @@
-import { Download } from 'lucide-react';
+import { Download, X } from 'lucide-react';
 import { useContext, useState } from 'react';
 import { PendingRequestsContext } from './PendingRequestsContext';
 import { Button } from './ui/button';
@@ -34,7 +34,7 @@ export function SongPreview({
   onDeleteGroup,
   phoneNumber
 }: SongPreviewProps) {
-  const { pending } = useContext(PendingRequestsContext);
+  const { pending, cancelAll } = useContext(PendingRequestsContext);
   const [isDeliveryDialogOpen, setIsDeliveryDialogOpen] = useState(false);
   const [deliveryType, setDeliveryType] = useState<'DIGITAL_LINK' | 'PHYSICAL_USB'>('DIGITAL_LINK');
   return (
@@ -45,8 +45,15 @@ export function SongPreview({
           <span className="text-sm text-muted-foreground flex items-center gap-2">
             {totalSongs} cancion{totalSongs !== 1 ? 'es' : ''}
             {pending > 0 && (
-              <span className="ml-2 px-2 py-0.5 rounded bg-yellow-100 text-yellow-800 text-xs font-semibold">
+              <span className="ml-2 px-2 py-0.5 rounded bg-yellow-100 text-yellow-800 text-xs font-semibold flex items-center gap-1">
                 busquedas en cola: {pending}
+                <button
+                  onClick={cancelAll}
+                  className="ml-1 hover:text-red-600 transition-colors"
+                  title="Cancelar todas las búsquedas"
+                >
+                  <X className="h-3 w-3" />
+                </button>
               </span>
             )}
           </span>

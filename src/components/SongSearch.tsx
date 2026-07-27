@@ -21,7 +21,7 @@ export function SongSearch({ onAddSong, existingTags }: SongSearchProps) {
   const songInputRef = useRef<HTMLInputElement>(null);
   const artistInputRef = useRef<HTMLInputElement>(null);
   const { streamData } = useStreamingApi();
-  const { increment, decrement } = useContext(PendingRequestsContext);
+  const { increment, decrement, signal } = useContext(PendingRequestsContext);
 
   // Handlers para navegación por teclado
   const handleTagKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -82,9 +82,11 @@ export function SongSearch({ onAddSong, existingTags }: SongSearchProps) {
         },
         undefined,
         currentTagName,
-        currentArtistName
+        currentArtistName,
+        signal
       );
-    } catch (error) {
+    } catch (error: any) {
+      if (error?.name === 'AbortError') return;
       console.error('Error searching song:', error);
     } finally {
       decrement();

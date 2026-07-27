@@ -19,7 +19,7 @@ export function UrlSearch({ onAddSong, existingTags }: UrlSearchProps) {
   const urlInputRef = useRef<HTMLInputElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const { streamData } = useStreamingApi();
-  const { increment, decrement } = useContext(PendingRequestsContext);
+  const { increment, decrement, signal } = useContext(PendingRequestsContext);
 
   const searchByUrl = async () => {
     if (!tagName.trim() || !url.trim()) return;
@@ -33,9 +33,11 @@ export function UrlSearch({ onAddSong, existingTags }: UrlSearchProps) {
         onAddSong,
         undefined,
         tagName,
-        tagName
+        tagName,
+        signal
       );
-    } catch (error) {
+    } catch (error: any) {
+      if (error?.name === 'AbortError') return;
       console.error('Error searching by URL:', error);
     } finally {
       decrement();

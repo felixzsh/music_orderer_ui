@@ -5,17 +5,18 @@ import { authHeaders } from '../utils/headers';
 
 export function useStreamingApi() {
   const streamData = useCallback(async (
-    endpoint: string, 
+    endpoint: string,
     onSong: (song: Song, tagName: string, artistName?: string) => void,
     onStreamEvent?: (event: StreamEvent, tagName: string, artistName?: string) => void,
     tagName: string = '',
-    artistName: string = ''
+    artistName: string = '',
+    signal?: AbortSignal,
   ) => {
     try {
       const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
-      const response = await fetch(url, { headers: authHeaders() });
+      const response = await fetch(url, { headers: authHeaders(), signal });
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      
+
       const reader = response.body?.getReader();
       if (!reader) throw new Error('No reader available');
 

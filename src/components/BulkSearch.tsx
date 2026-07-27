@@ -16,7 +16,7 @@ export function BulkSearch({ onAddSong }: BulkSearchProps) {
   const [progress, setProgress] = useState('');
   const activeCount = useRef(0);
   const [hasActive, setHasActive] = useState(false);
-  const { increment, decrement } = useContext(PendingRequestsContext);
+  const { increment, decrement, signal } = useContext(PendingRequestsContext);
 
   const handleSubmit = async () => {
     if (!text.trim()) return;
@@ -29,6 +29,8 @@ export function BulkSearch({ onAddSong }: BulkSearchProps) {
     increment();
 
     for (let i = 0; i < lines.length; i++) {
+      if (signal.aborted) break;
+
       const line = lines[i].trim();
       const separatorIndex = line.lastIndexOf(' - ');
 
@@ -44,7 +46,7 @@ export function BulkSearch({ onAddSong }: BulkSearchProps) {
       try {
         const response = await fetch(
           `${API_BASE_URL}/api/metube/search/song?query=${encodeURIComponent(songTitle)}&artist=${encodeURIComponent(artist)}`,
-          { headers: authHeaders() }
+          { headers: authHeaders(), signal }
         );
         const data = await response.json();
 
@@ -61,7 +63,8 @@ export function BulkSearch({ onAddSong }: BulkSearchProps) {
         } else {
           onAddSong(data, 'todas', artist);
         }
-      } catch {
+      } catch (error: any) {
+        if (error?.name === 'AbortError') break;
         onAddSong(
           {
             title: songTitle,
