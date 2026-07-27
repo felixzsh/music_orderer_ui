@@ -203,13 +203,20 @@ export const OrdererPage = ({ userData }: OrdererPageProps) => {
       // Mostrar estado de carga
       console.log('Enviando request...', { phone: userData.phone, songGroups, deliveryType });
       
+      const orderedGroups = Object.fromEntries(
+        Object.entries(songGroups).map(([key, group]) => [
+          key,
+          { ...group, songs: [...group.songs].reverse() }
+        ])
+      );
+
       const response = await fetch(`${API_BASE_URL}/api/order/create`, {
         method: 'POST',
         headers: authHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({
           phoneNumber: userData.phone,
           deliveryType: deliveryType,
-          songGroups: songGroups
+          songGroups: orderedGroups
         })
       });
 
