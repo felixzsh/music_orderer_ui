@@ -265,10 +265,10 @@ export const OrdererPage = ({ userData }: OrdererPageProps) => {
 
  
 
-  const handleSendRequest = useCallback(async (deliveryType: 'DIGITAL_LINK' | 'PHYSICAL_USB') => {
+  const handleSendRequest = useCallback(async (deliveryType: 'DIGITAL_LINK' | 'PHYSICAL_USB', usbSource: 'internal' | 'external') => {
     try {
       // Mostrar estado de carga
-      console.log('Enviando request...', { phone: userData.phone, songGroups, deliveryType });
+      console.log('Enviando request...', { phone: userData.phone, songGroups, deliveryType, usbSource });
       
       const orderedGroups = Object.fromEntries(
         Object.entries(songGroups).map(([key, group]) => [
@@ -283,6 +283,7 @@ export const OrdererPage = ({ userData }: OrdererPageProps) => {
         body: JSON.stringify({
           phoneNumber: userData.phone,
           deliveryType: deliveryType,
+          usbSource: usbSource,
           songGroups: orderedGroups
         })
       });

@@ -7,24 +7,27 @@ import { ScrollArea } from './ui/scroll-area';
 import { HierarchicalSongList } from './HierarchicalSongList';
 import { SongGroup } from '../types/api';
 import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "./ui/alert-dialog";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "./ui/dialog";
+import { Label } from './ui/label';
+import { RadioGroup, RadioGroupItem } from './ui/radio-group';
 
 interface SongPreviewProps {
   songGroups: { [key: string]: SongGroup };
   totalSongs: number;
   onDeleteSong: (songId: string) => void;
   onMoveSong: (songId: string, sourceTag: string, destTag: string, newIndex: number) => void;
-  onSendRequest: (deliveryType: 'DIGITAL_LINK' | 'PHYSICAL_USB') => void;
+  onSendRequest: (deliveryType: 'DIGITAL_LINK' | 'PHYSICAL_USB', usbSource: 'internal' | 'external') => void;
   onDeleteGroup: (groupName: string) => void;
   onReSearch: (songId: string) => void;
   onUpdateSong: (songId: string, updates: { title?: string; artist?: string }) => void;
   phoneNumber: string;
+  isAdmin?: boolean;
 }
 
 export function SongPreview({ 
@@ -36,11 +39,24 @@ export function SongPreview({
   onDeleteGroup,
   onReSearch,
   onUpdateSong,
-  phoneNumber
+  phoneNumber,
+  isAdmin = false
 }: SongPreviewProps) {
   const { pending, cancelAll, skipCount, resetSkips } = useContext(PendingRequestsContext);
   const [isDeliveryDialogOpen, setIsDeliveryDialogOpen] = useState(false);
   const [deliveryType, setDeliveryType] = useState<'DIGITAL_LINK' | 'PHYSICAL_USB'>('DIGITAL_LINK');
+  const [usbSource, setUsbSource] = useState<'internal' | 'external'>('internal');
+
+  const openDeliveryDialog = () => {
+    setDeliveryType('DIGITAL_LINK');
+    setUsbSource('internal');
+    setIsDeliveryDialogOpen(true);
+  };
+
+  const handleConfirmSend = () => {
+    setIsDeliveryDialogOpen(false);
+    onSendRequest(deliveryType, deliveryType === 'PHYSICAL_USB' ? usbSource : 'internal');
+  };
   return (
     <Card className="h-full flex flex-col overflow-hidden">
       <CardHeader className="flex-shrink-0">
@@ -88,10 +104,10 @@ export function SongPreview({
           <div className="flex-shrink-0 mt-4 pt-4 border-t">
             <Button 
               onClick={() => {
-                if (phoneNumber.startsWith('521899')) {
-                  setIsDeliveryDialogOpen(true);
+                if (isAdmin || phoneNumber.startsWith('521899')) {
+                  openDeliveryDialog();
                 } else {
-                  onSendRequest('DIGITAL_LINK');
+                  onSendRequest('DIGITAL_LINK', 'internal');
                 }
               }}
               className="w-full"
@@ -101,39 +117,64 @@ export function SongPreview({
               Enviar Request
             </Button>
 
-            <AlertDialog open={isDeliveryDialogOpen} onOpenChange={setIsDeliveryDialogOpen}>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>¿Cómo quieres recibir tu paquete musical?</AlertDialogTitle>
-                  <AlertDialogDescription>
+            <Dialog open={isDeliveryDialogOpen} onOpenChange={setIsDeliveryDialogOpen}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>¿Cómo quieres recibir tu paquete musical?</DialogTitle>
+                  <DialogDescription>
                     Selecciona el método de entrega que prefieres
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setDeliveryType('DIGITAL_LINK');
-                      onSendRequest('DIGITAL_LINK');
-                      setIsDeliveryDialogOpen(false);
-                    }}
-                  >
-                    Link de descarga
+                  </DialogDescription>
+                </DialogHeader>
+
+                <div className="space-y-5">
+                  <div>
+                    <Label className="text-sm font-medium">Entrega</Label>
+                    <RadioGroup
+                      value={deliveryType}
+                      onValueChange={(v) => setDeliveryType(v as 'DIGITAL_LINK' | 'PHYSICAL_USB')}
+                      className="mt-2"
+                    >
+                      <div className="flex items-center gap-2">
+                        <RadioGroupItem value="DIGITAL_LINK" id="delivery-digital" />
+                        <Label htmlFor="delivery-digital">Link de descarga</Label>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <RadioGroupItem value="PHYSICAL_USB" id="delivery-usb" />
+                        <Label htmlFor="delivery-usb">USB físico</Label>
+                      </div>
+                    </RadioGroup>
+                  </div>
+
+                  <div>
+                    <Label className="text-sm font-medium">USB</Label>
+                    <RadioGroup
+                      value={usbSource}
+                      onValueChange={(v) => setUsbSource(v as 'internal' | 'external')}
+                      disabled={deliveryType !== 'PHYSICAL_USB'}
+                      className="mt-2"
+                    >
+                      <div className="flex items-center gap-2">
+                        <RadioGroupItem value="internal" id="usb-internal" />
+                        <Label htmlFor="usb-internal">USB interno — nuestro propio</Label>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <RadioGroupItem value="external" id="usb-external" />
+                        <Label htmlFor="usb-external">USB externo — tu propia USB</Label>
+                      </div>
+                    </RadioGroup>
+                  </div>
+                </div>
+
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setIsDeliveryDialogOpen(false)}>
+                    Cancelar
                   </Button>
-                  <Button
-                    onClick={() => {
-                      setDeliveryType('PHYSICAL_USB');
-                      onSendRequest('PHYSICAL_USB');
-                      setIsDeliveryDialogOpen(false);
-                      // Reset to default after sending
-                      setDeliveryType('DIGITAL_LINK');
-                    }}
-                  >
-                    USB físico
+                  <Button onClick={handleConfirmSend}>
+                    Confirmar pedido
                   </Button>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
         )}
       </CardContent>

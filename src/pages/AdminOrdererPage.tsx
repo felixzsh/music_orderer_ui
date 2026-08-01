@@ -282,7 +282,7 @@ export function AdminOrdererPage() {
     });
   }, []);
 
-  const handleSendRequest = useCallback(async (deliveryType: 'DIGITAL_LINK' | 'PHYSICAL_USB') => {
+  const handleSendRequest = useCallback(async (deliveryType: 'DIGITAL_LINK' | 'PHYSICAL_USB', usbSource: 'internal' | 'external') => {
     if (!selectedClient) return;
 
     try {
@@ -299,6 +299,7 @@ export function AdminOrdererPage() {
         body: JSON.stringify({
           phoneNumber: selectedClient.phoneNumber,
           deliveryType: deliveryType,
+          usbSource: usbSource,
           songGroups: orderedGroups
         })
       });
@@ -397,6 +398,7 @@ export function AdminOrdererPage() {
               onReSearch={handleReSearch}
               onUpdateSong={handleUpdateSong}
               phoneNumber={selectedClient?.phoneNumber || ''}
+              isAdmin={true}
             />
           )}
         </div>
@@ -431,6 +433,7 @@ export function AdminOrdererPage() {
             onReSearch={handleReSearch}
             onUpdateSong={handleUpdateSong}
             phoneNumber={selectedClient?.phoneNumber || ''}
+            isAdmin={true}
           />
         </div>
       </div>
