@@ -75,7 +75,7 @@ export function BulkSearch({ onAddSong }: BulkSearchProps) {
 
         if (data.search_result === 'NOT_FOUND') {
           onAddSong(
-            { title: songTitle, artist_names: [artist], search_result: 'not_found' },
+            { title: songTitle, artist_names: [artist], search_result: 'not_found', intendedTagName: 'todas' },
             'No encontradas', artist
           );
           notFound++;
@@ -86,7 +86,7 @@ export function BulkSearch({ onAddSong }: BulkSearchProps) {
       } catch (error: any) {
         if (error?.name === 'AbortError') break;
         onAddSong(
-          { title: songTitle, artist_names: [artist], search_result: 'not_found' },
+          { title: songTitle, artist_names: [artist], search_result: 'not_found', intendedTagName: 'todas' },
           'No encontradas', artist
         );
         errors++;

@@ -72,6 +72,7 @@ export function SongSearch({ onAddSong, existingTags }: SongSearchProps) {
                 title: currentSongName,
                 artist_names: [currentArtistName],
                 search_result: 'not_found',
+                intendedTagName: currentTagName,
               },
               'No encontradas',
               currentArtistName

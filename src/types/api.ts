@@ -56,6 +56,7 @@ export interface HierarchicalSong extends Song {
   tagName: string;
   artistName: string;
   createdAt: number;
+  intendedTagName?: string;
 }
 
 // Simplificada - solo 2 niveles: TagName → Canciones

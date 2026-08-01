@@ -164,24 +164,53 @@ export function AdminOrdererPage() {
     }
   }, [addSongToGroup]);
 
-  const replaceSongInPlace = useCallback((songId: string, replacement: Song) => {
+  const moveFoundSong = useCallback((songId: string, replacement: Song) => {
     setSongGroups(prev => {
       const newGroups = { ...prev };
+      let oldSong: HierarchicalSong | undefined;
+      let oldGroupName = '';
+
       for (const groupName of Object.keys(newGroups)) {
         const group = newGroups[groupName];
         const idx = group.songs.findIndex(s => s.id === songId);
         if (idx !== -1) {
-          const old = group.songs[idx];
-          group.songs[idx] = {
-            ...replacement,
-            id: old.id,
-            tagName: old.tagName,
-            artistName: old.artistName,
-            createdAt: old.createdAt,
-          };
+          oldSong = group.songs[idx];
+          group.songs.splice(idx, 1);
+          group.count = group.songs.length;
+          oldGroupName = groupName;
           break;
         }
       }
+
+      if (!oldSong) return prev;
+
+      const targetGroup = oldSong.intendedTagName || oldGroupName;
+      if (newGroups[oldGroupName]?.count === 0) {
+        delete newGroups[oldGroupName];
+      }
+
+      const updatedSong: HierarchicalSong = {
+        ...replacement,
+        id: oldSong.id,
+        tagName: targetGroup,
+        artistName: oldSong.artistName,
+        createdAt: oldSong.createdAt,
+        intendedTagName: oldSong.intendedTagName,
+      };
+
+      if (!newGroups[targetGroup]) {
+        newGroups[targetGroup] = {
+          name: targetGroup,
+          type: 'group',
+          songs: [],
+          isExpanded: true,
+          count: 0,
+        };
+      }
+
+      newGroups[targetGroup].songs.unshift(updatedSong);
+      newGroups[targetGroup].count = newGroups[targetGroup].songs.length;
+
       return newGroups;
     });
   }, []);
@@ -202,12 +231,12 @@ export function AdminOrdererPage() {
       );
       const data = await response.json();
       if (data.search_result !== 'NOT_FOUND') {
-        replaceSongInPlace(songId, data);
+        moveFoundSong(songId, data);
       }
     } catch {
       // Silently fail
     }
-  }, [songGroups, replaceSongInPlace]);
+  }, [songGroups, moveFoundSong]);
 
   const handleUpdateSong = useCallback((songId: string, updates: { title?: string; artist?: string }) => {
     setSongGroups(prev => {
