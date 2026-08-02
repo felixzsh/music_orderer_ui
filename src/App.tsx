@@ -3,6 +3,8 @@ import { BlankPage } from './components/BlankPage';
 import { ProtectedOrdererRoute } from './components/ProtectedOrdererRoute';
 import { AdminLogin } from './pages/AdminLogin';
 import { AdminOrdererRoute } from './components/AdminOrdererRoute';
+import { RequireAdmin } from './components/RequireAdmin';
+import { HubStatusPage } from './pages/HubStatusPage';
 
 export default function App() {
   return (
@@ -15,6 +17,14 @@ export default function App() {
         <Route
           path="/admin"
           element={<AdminOrdererRoute />}
+        />
+        <Route
+          path="/hub"
+          element={
+            <RequireAdmin>
+              <HubStatusPage />
+            </RequireAdmin>
+          }
         />
         <Route
           path="/orderer"

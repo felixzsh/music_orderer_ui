@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { API_BASE_URL } from '../constants/api';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -26,12 +26,14 @@ export function AdminLogin() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = (location.state as { from?: string } | null)?.from || '/admin';
 
   useEffect(() => {
     if (isAdminTokenValid()) {
-      navigate('/admin', { replace: true });
+      navigate(from, { replace: true });
     }
-  }, [navigate]);
+  }, [navigate, from]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,7 +51,7 @@ export function AdminLogin() {
 
       if (result.success && result.token) {
         localStorage.setItem('auth_token', result.token);
-        navigate('/admin', { replace: true });
+        navigate(from, { replace: true });
       } else {
         setError(result.error || 'Error de autenticación');
       }

@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Smartphone, Monitor, ToggleLeft, ToggleRight, Sun, Moon } from 'lucide-react';
+import { Smartphone, Monitor, ToggleLeft, ToggleRight, Sun, Moon, HardDrive } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { RequestBuilder } from '../components/RequestBuilder';
 import { SongPreview } from '../components/SongPreview';
@@ -370,6 +370,15 @@ export function AdminOrdererPage() {
           </SelectContent>
         </Select>
       )}
+      <Button
+        variant="outline"
+        size="lg"
+        onClick={() => navigate('/hub')}
+        className="flex items-center gap-2 px-4"
+      >
+        <HardDrive className="h-4 w-4" />
+        <span className="hidden sm:inline">Estado del Hub</span>
+      </Button>
       <Button
         variant="outline"
         size="lg"
