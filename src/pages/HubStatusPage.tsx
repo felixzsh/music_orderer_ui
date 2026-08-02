@@ -23,7 +23,7 @@ export function HubStatusPage() {
   );
 
   return (
-    <div className="flex h-screen gap-4 overflow-hidden bg-background p-4">
+    <div className="flex h-full gap-4 overflow-hidden bg-background p-4">
       <HubPanel
         slots={slots}
         status={status}

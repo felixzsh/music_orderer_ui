@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { OrdererPage } from '../pages/OrdererPage';
+import { AppShell } from './AppShell';
+import { OrderingView } from './OrderingView';
 import { BlankPage } from './BlankPage';
 import { API_BASE_URL } from '../constants/api';
 import { authHeaders } from '../utils/headers';
@@ -70,6 +71,10 @@ export const ProtectedOrdererRoute = () => {
     return <BlankPage message={`Acceso denegado: ${errorMessage}`} />;
   }
 
-  // Token válido, mostrar OrdererPage con los datos del usuario
-  return <OrdererPage userData={userData!} />;
+  // Token válido: misma cáscara compartida (header + day/night) pero solo vista de ordenar.
+  return (
+    <AppShell isAdmin={false} activeView="ordering">
+      <OrderingView isAdmin={false} userPhone={userData!.phone} />
+    </AppShell>
+  );
 };

@@ -1,12 +1,10 @@
 import { useState, useCallback, useEffect, useContext } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Smartphone, Monitor, ToggleLeft, ToggleRight, Sun, Moon, HardDrive } from 'lucide-react';
-import { Button } from '../components/ui/button';
-import { RequestBuilder } from '../components/RequestBuilder';
-import { SongPreview } from '../components/SongPreview';
-import { PendingRequestsContext } from '../components/PendingRequestsContext';
+import { Smartphone, Monitor, ToggleLeft, ToggleRight } from 'lucide-react';
+import { Button } from './ui/button';
+import { RequestBuilder } from './RequestBuilder';
+import { SongPreview } from './SongPreview';
+import { PendingRequestsContext } from './PendingRequestsContext';
 import { useMobile } from '../hooks/useMobile';
-import { useDarkMode } from '../hooks/useDarkMode';
 import { SongGroup, HierarchicalSong, Song, StreamEvent, Client } from '../types/api';
 import { API_BASE_URL } from '../constants/api';
 import { authHeaders } from '../utils/headers';
@@ -16,9 +14,20 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '../components/ui/select';
+} from './ui/select';
 
-export function AdminOrdererPage() {
+interface OrderingViewProps {
+  isAdmin: boolean;
+  userPhone?: string;
+}
+
+/**
+ * Vista de orden compartida entre admin y usuario normal.
+ * - isAdmin: muestra el dropdown de clientes (a quién corresponde la orden)
+ *   y habilita las features de administrador en SongPreview.
+ * - userPhone: número del usuario normal (pedido a su nombre).
+ */
+export function OrderingView({ isAdmin, userPhone }: OrderingViewProps) {
   const [songGroups, setSongGroups] = useState<{ [key: string]: SongGroup }>(() => {
     const saved = localStorage.getItem('musicOrderer_songGroups');
     return saved ? JSON.parse(saved) : {};
@@ -26,15 +35,14 @@ export function AdminOrdererPage() {
   const { addSkip } = useContext(PendingRequestsContext);
   const [clients, setClients] = useState<Client[]>([]);
   const [selectedClientId, setSelectedClientId] = useState<string>('');
-  const [loadingClients, setLoadingClients] = useState(true);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const navigate = useNavigate();
+  const [loadingClients, setLoadingClients] = useState(isAdmin);
 
   useEffect(() => {
     localStorage.setItem('musicOrderer_songGroups', Object.keys(songGroups).length > 0 ? JSON.stringify(songGroups) : '');
   }, [songGroups]);
 
   const fetchClients = useCallback(async () => {
+    if (!isAdmin) return;
     try {
       const response = await fetch(`${API_BASE_URL}/api/admin/clients`, {
         headers: authHeaders(),
@@ -42,7 +50,7 @@ export function AdminOrdererPage() {
 
       if (response.status === 401 || response.status === 403) {
         localStorage.removeItem('auth_token');
-        navigate('/', { replace: true });
+        window.location.href = '/';
         return;
       }
 
@@ -56,17 +64,16 @@ export function AdminOrdererPage() {
     } finally {
       setLoadingClients(false);
     }
-  }, [navigate]);
+  }, [isAdmin]);
 
   useEffect(() => {
-    fetchClients();
-  }, [fetchClients]);
+    if (isAdmin) fetchClients();
+  }, [isAdmin, fetchClients]);
 
   const selectedClient = clients.find(c => c.id.toString() === selectedClientId);
 
   const [currentPanel, setCurrentPanel] = useState<'builder' | 'preview'>('builder');
   const isMobile = useMobile();
-  const { isDark, toggleDarkMode } = useDarkMode();
 
   const handleDeleteGroup = useCallback((groupName: string) => {
     setSongGroups(prev => {
@@ -312,7 +319,8 @@ export function AdminOrdererPage() {
   }, []);
 
   const handleSendRequest = useCallback(async (deliveryType: 'DIGITAL_LINK' | 'PHYSICAL_USB', usbSource: 'internal' | 'external') => {
-    if (!selectedClient) return;
+    const phone = isAdmin ? selectedClient?.phoneNumber : userPhone;
+    if (!phone) return;
 
     try {
       const orderedGroups = Object.fromEntries(
@@ -326,7 +334,7 @@ export function AdminOrdererPage() {
         method: 'POST',
         headers: authHeaders({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({
-          phoneNumber: selectedClient.phoneNumber,
+          phoneNumber: phone,
           deliveryType: deliveryType,
           usbSource: usbSource,
           songGroups: orderedGroups
@@ -342,7 +350,8 @@ export function AdminOrdererPage() {
       if (data.success) {
         localStorage.removeItem('musicOrderer_songGroups');
         setSongGroups({});
-        alert(`Pedido enviado exitosamente para ${selectedClient.name}\n\nID: ${data.data.tempId}\nCanciones: ${data.data.totalSongs}\nPrecio: $${(data.data.price / 100).toFixed(2)}`);
+        const who = isAdmin && selectedClient ? ` para ${selectedClient.name}` : '';
+        alert(`¡Pedido enviado exitosamente${who}!\n\nID: ${data.data.tempId}\nCanciones: ${data.data.totalSongs}\nPrecio: $${(data.data.price / 100).toFixed(2)}`);
       } else {
         throw new Error(data.error || 'Error desconocido');
       }
@@ -350,14 +359,16 @@ export function AdminOrdererPage() {
       console.error('Error enviando request:', error);
       alert(`Error enviando el pedido: ${error}`);
     }
-  }, [songGroups, selectedClient]);
+  }, [songGroups, isAdmin, selectedClient, userPhone]);
 
-  const clientHeader = (
+  const phoneNumber = isAdmin ? (selectedClient?.phoneNumber || '') : (userPhone || '');
+
+  const clientHeader = isAdmin ? (
     <div className="flex items-center gap-3">
       {loadingClients ? (
         <div className="text-sm text-muted-foreground">Cargando clientes...</div>
       ) : (
-        <Select value={selectedClientId} onValueChange={setSelectedClientId} onOpenChange={(open) => { setDropdownOpen(open); if (open) fetchClients(); }}>
+        <Select value={selectedClientId} onValueChange={setSelectedClientId} onOpenChange={(open) => { if (open) fetchClients(); }}>
           <SelectTrigger className="w-[320px]">
             <SelectValue placeholder="Seleccionar cliente..." />
           </SelectTrigger>
@@ -370,37 +381,18 @@ export function AdminOrdererPage() {
           </SelectContent>
         </Select>
       )}
-      <Button
-        variant="outline"
-        size="lg"
-        onClick={() => navigate('/hub')}
-        className="flex items-center gap-2 px-4"
-      >
-        <HardDrive className="h-4 w-4" />
-        <span className="hidden sm:inline">Estado del Hub</span>
-      </Button>
-      <Button
-        variant="outline"
-        size="lg"
-        onClick={toggleDarkMode}
-        className="flex items-center gap-2 px-4"
-      >
-        {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-        <span className="hidden sm:inline">{isDark ? 'Light' : 'Dark'}</span>
-      </Button>
     </div>
-  );
+  ) : null;
 
   if (isMobile) {
     return (
-      <div className="h-screen flex flex-col bg-background">
-        <div className="flex items-center justify-between gap-3 p-4 bg-background border-b">
-          {clientHeader}
+      <div className="flex h-full flex-col bg-background">
+        <div className="flex items-center justify-between gap-3 border-b bg-background p-4">
           <Button
             variant="outline"
             size="lg"
             onClick={() => setCurrentPanel(currentPanel === 'builder' ? 'preview' : 'builder')}
-            className="flex items-center gap-3 px-6"
+            className="relative flex items-center gap-3 overflow-hidden px-6"
           >
             <div className={`flex items-center gap-2 transition-colors ${
               currentPanel === 'builder' ? '' : 'text-muted-foreground'
@@ -416,9 +408,10 @@ export function AdminOrdererPage() {
               <span>Canciones ({totalSongs})</span>
             </div>
           </Button>
+          {clientHeader}
         </div>
 
-        <div className="flex-1 p-4">
+        <div className="flex-1 overflow-y-auto p-4">
           {currentPanel === 'builder' ? (
             <RequestBuilder
               onAddSong={addSongToGroup}
@@ -435,8 +428,8 @@ export function AdminOrdererPage() {
               onDeleteGroup={handleDeleteGroup}
               onReSearch={handleReSearch}
               onUpdateSong={handleUpdateSong}
-              phoneNumber={selectedClient?.phoneNumber || ''}
-              isAdmin={true}
+              phoneNumber={phoneNumber}
+              isAdmin={isAdmin}
             />
           )}
         </div>
@@ -445,14 +438,16 @@ export function AdminOrdererPage() {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-background">
-      <div className="flex items-center justify-between px-4 py-3 bg-background border-b">
-        <div className="text-sm font-medium text-muted-foreground">Panel de Administración</div>
-        {clientHeader}
-      </div>
+    <div className="flex h-full flex-col bg-background">
+      {isAdmin && (
+        <div className="flex items-center justify-between gap-3 border-b bg-background px-4 py-3">
+          <div className="text-sm font-medium text-muted-foreground">Panel de Administración</div>
+          <div className="ml-auto">{clientHeader}</div>
+        </div>
+      )}
 
-      <div className="flex-1 flex overflow-hidden">
-        <div className="w-1/2 p-4 border-r h-full">
+      <div className="flex flex-1 overflow-hidden">
+        <div className="h-full w-1/2 border-r p-4">
           <RequestBuilder
             onAddSong={addSongToGroup}
             onStreamEvent={handleStreamEvent}
@@ -460,7 +455,7 @@ export function AdminOrdererPage() {
           />
         </div>
 
-        <div className="w-1/2 p-4 h-full">
+        <div className="h-full w-1/2 p-4">
           <SongPreview
             songGroups={songGroups}
             totalSongs={totalSongs}
@@ -470,8 +465,8 @@ export function AdminOrdererPage() {
             onDeleteGroup={handleDeleteGroup}
             onReSearch={handleReSearch}
             onUpdateSong={handleUpdateSong}
-            phoneNumber={selectedClient?.phoneNumber || ''}
-            isAdmin={true}
+            phoneNumber={phoneNumber}
+            isAdmin={isAdmin}
           />
         </div>
       </div>

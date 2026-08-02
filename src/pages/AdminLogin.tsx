@@ -27,7 +27,7 @@ export function AdminLogin() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const from = (location.state as { from?: string } | null)?.from || '/admin';
+  const from = (location.state as { from?: string } | null)?.from || '/ordering';
 
   useEffect(() => {
     if (isAdminTokenValid()) {
