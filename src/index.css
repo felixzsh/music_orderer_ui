@@ -4528,11 +4528,17 @@ html {
 /* ------------------------------------------------------------------ */
 
 .hub-led {
-  width: 14px;
-  height: 14px;
-  border-radius: 9999px;
+  width: 24px;
+  height: 24px;
+  border-radius: 8px;
   flex-shrink: 0;
   transition: box-shadow 0.2s ease, background-color 0.2s ease, opacity 0.2s ease;
+}
+
+.hub-led--sm {
+  width: 12px;
+  height: 12px;
+  border-radius: 4px;
 }
 
 .hub-led--free {
@@ -4542,7 +4548,7 @@ html {
 
 .hub-led--burning {
   background-color: #f59e0b;
-  animation: hub-pulse 1.2s ease-in-out infinite;
+  box-shadow: 0 0 10px 2px rgba(245, 158, 11, 0.7);
 }
 
 .hub-led--completed {
@@ -4557,23 +4563,6 @@ html {
 
 .hub-led--error {
   background-color: #ef4444;
-  animation: hub-blink 1s steps(2, start) infinite;
-}
-
-@keyframes hub-pulse {
-  0%, 100% {
-    box-shadow: 0 0 4px 1px rgba(245, 158, 11, 0.5);
-    opacity: 1;
-  }
-  50% {
-    box-shadow: 0 0 14px 4px rgba(245, 158, 11, 0.9);
-    opacity: 0.75;
-  }
-}
-
-@keyframes hub-blink {
-  50% {
-    opacity: 0.15;
-  }
+  box-shadow: 0 0 10px 2px rgba(239, 68, 68, 0.6);
 }
 

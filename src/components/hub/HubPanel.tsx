@@ -20,7 +20,7 @@ export function HubPanel({ slots, status, lastEventAt, pendingSlot, onToggleSour
   const conn = CONNECTION_LABEL[status];
 
   return (
-    <div className="flex h-full w-[340px] flex-col rounded-2xl border border-slate-700 bg-slate-950 shadow-2xl">
+    <div className="flex w-full flex-col overflow-hidden rounded-xl border border-slate-700 bg-slate-950 shadow-2xl">
       <div className="flex items-center justify-between border-b border-slate-800 px-4 py-3">
         <div className="flex items-center gap-2">
           <span className={cn('size-2 rounded-full', conn.dot)} />
@@ -29,25 +29,39 @@ export function HubPanel({ slots, status, lastEventAt, pendingSlot, onToggleSour
         <span className="text-[10px] text-slate-500">{conn.label}</span>
       </div>
 
-      <div className="flex flex-1 flex-col gap-2 overflow-y-auto p-3">
-        {Array.from({ length: 10 }, (_, i) => i + 1).map(n => (
-          <HubBay
-            key={n}
-            slotNumber={n}
-            slot={slots ? slots[String(n)] ?? null : null}
-            connected={status === 'connected'}
-            pending={pendingSlot === n}
-            onToggleSource={onToggleSource}
-          />
-        ))}
+      <div className="flex flex-col p-2">
+        <table className="w-full table-fixed border-separate border-spacing-0">
+          <thead className="bg-slate-900">
+            <tr className="text-left text-[10px] uppercase tracking-wider text-slate-500">
+              <th className="px-2 py-1.5 text-center font-medium">Puertos</th>
+              <th className="px-2 py-1.5 text-center font-medium">Estados</th>
+              <th className="px-2 py-1.5 text-center font-medium">Label</th>
+              <th className="px-2 py-1.5 text-center font-medium" title="Activo = external (USBs de clientes)">
+                Ext
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {Array.from({ length: 10 }, (_, i) => 10 - i).map(n => (
+              <HubBay
+                key={n}
+                slotNumber={n}
+                slot={slots ? slots[String(n)] ?? null : null}
+                connected={status === 'connected'}
+                pending={pendingSlot === n}
+                onToggleSource={onToggleSource}
+              />
+            ))}
+          </tbody>
+        </table>
       </div>
 
       <div className="border-t border-slate-800 px-4 py-2 text-[10px] text-slate-500">
-        <div className="flex items-center gap-3">
-          <span className="flex items-center gap-1"><span className="hub-led hub-led--free" /> Libre</span>
-          <span className="flex items-center gap-1"><span className="hub-led hub-led--burning" /> Quemando</span>
-          <span className="flex items-center gap-1"><span className="hub-led hub-led--completed" /> Listo</span>
-          <span className="flex items-center gap-1"><span className="hub-led hub-led--error" /> Error</span>
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+          <span className="flex items-center gap-1"><span className="hub-led hub-led--sm hub-led--free" /> Libre</span>
+          <span className="flex items-center gap-1"><span className="hub-led hub-led--sm hub-led--burning" /> Quemando</span>
+          <span className="flex items-center gap-1"><span className="hub-led hub-led--sm hub-led--completed" /> Listo</span>
+          <span className="flex items-center gap-1"><span className="hub-led hub-led--sm hub-led--error" /> Error</span>
         </div>
         <div className="mt-1">
           {lastEventAt ? `Última actualización: ${lastEventAt.toLocaleTimeString()}` : 'Esperando estado…'}
