@@ -16,23 +16,19 @@ const STATE_LABEL: Record<HubSlotState, string> = {
   ERROR: 'Error',
 };
 
-function humanSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  const units = ['KB', 'MB', 'GB'];
-  let value = bytes;
+function burnSize(bytes: number, totalBytes: number): string {
+  const units = ['B', 'KB', 'MB', 'GB'];
+  let div = 1;
   let unit = 'B';
   for (const u of units) {
-    value /= 1024;
-    if (value < 1024) {
+    if (totalBytes < div * 1024) {
       unit = u;
       break;
     }
+    div *= 1024;
   }
-  return `${value.toFixed(1)} ${unit}`;
-}
-
-function truncate(s: string, max: number): string {
-  return s.length > max ? `${s.slice(0, max - 1)}…` : s;
+  const fmt = (b: number) => (div === 1 ? `${b}` : `${(b / div).toFixed(1)}`);
+  return `${fmt(bytes)}/${fmt(totalBytes)} ${unit}`;
 }
 
 interface HubBayProps {
@@ -54,13 +50,68 @@ export function HubBay({ slotNumber, slot, connected, pending, onToggleSource }:
     : 0;
 
   return (
-    <tr className={cn('border-b border-slate-800/60', isExternal && 'bg-amber-500/10')}>
+    <tr
+      className={cn(
+        'border-b border-slate-800/60',
+        isExternal ? 'hub-row--external' : 'hub-row--internal',
+      )}
+    >
       <td className="px-2 py-1 text-center align-middle">
         <div className="text-2xl font-bold tabular-nums text-slate-200">{slotNumber}</div>
       </td>
 
       <td className="px-2 py-1 text-center align-middle">
-        <div className="flex flex-col items-center gap-1">
+        <div className="mx-auto max-w-[84px] truncate text-[10px] text-slate-400">
+          {slot?.label ?? ''}
+        </div>
+      </td>
+
+      <td className="px-2 py-1 align-middle">
+        {slot?.state === 'BURNING' && burn ? (
+          <div
+            style={{
+              position: 'relative',
+              width: '100%',
+              height: 20,
+              overflow: 'hidden',
+              borderRadius: 9999,
+              backgroundColor: 'rgba(51, 65, 85, 0.6)',
+            }}
+          >
+            <div
+              style={{
+                position: 'absolute',
+                top: 0,
+                bottom: 0,
+                left: 0,
+                width: `${burnPct}%`,
+                borderRadius: 9999,
+                backgroundColor: '#fbbf24',
+                transition: 'width 0.3s ease',
+              }}
+            />
+            <div
+              style={{
+                position: 'absolute',
+                inset: 0,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: 10,
+                fontWeight: 500,
+                color: '#f8fafc',
+                textShadow: '0 1px 2px rgba(0,0,0,0.85)',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {burn.n}/{burn.total} · {burnSize(burn.bytes_copied, burn.total_bytes)}
+            </div>
+          </div>
+        ) : null}
+      </td>
+
+      <td className="px-2 py-1 text-center align-middle">
+        <div className="flex items-center justify-center">
           <TooltipProvider delayDuration={200}>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -77,27 +128,6 @@ export function HubBay({ slotNumber, slot, connected, pending, onToggleSource }:
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
-
-          {slot?.state === 'BURNING' && burn && (
-            <div className="flex w-full flex-col gap-0.5">
-              <div className="h-1.5 w-full overflow-hidden rounded-full bg-slate-700">
-                <div
-                  className="h-full rounded-full bg-amber-400 transition-all duration-300"
-                  style={{ width: `${burnPct}%` }}
-                />
-              </div>
-              <div className="truncate text-[10px] text-slate-400">
-                {burn.n}/{burn.total} · {humanSize(burn.bytes_copied)}/{humanSize(burn.total_bytes)}
-                {burn.file ? ` · ${truncate(burn.file, 22)}` : ''}
-              </div>
-            </div>
-          )}
-        </div>
-      </td>
-
-      <td className="px-2 py-1 text-center align-middle">
-        <div className="mx-auto max-w-[84px] truncate text-[10px] text-slate-400">
-          {slot?.label ?? ''}
         </div>
       </td>
 

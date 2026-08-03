@@ -3,6 +3,7 @@ import { Smartphone, Monitor, ToggleLeft, ToggleRight } from 'lucide-react';
 import { Button } from './ui/button';
 import { RequestBuilder } from './RequestBuilder';
 import { SongPreview } from './SongPreview';
+import { Switch } from './ui/switch';
 import { PendingRequestsContext } from './PendingRequestsContext';
 import { useMobile } from '../hooks/useMobile';
 import { SongGroup, HierarchicalSong, Song, StreamEvent, Client } from '../types/api';
@@ -36,6 +37,13 @@ export function OrderingView({ isAdmin, userPhone }: OrderingViewProps) {
   const [clients, setClients] = useState<Client[]>([]);
   const [selectedClientId, setSelectedClientId] = useState<string>('');
   const [loadingClients, setLoadingClients] = useState(isAdmin);
+  const [keepPreviewOnSend, setKeepPreviewOnSend] = useState(
+    () => localStorage.getItem('musicOrderer_keepPreviewOnSend') === '1',
+  );
+
+  useEffect(() => {
+    localStorage.setItem('musicOrderer_keepPreviewOnSend', keepPreviewOnSend ? '1' : '');
+  }, [keepPreviewOnSend]);
 
   useEffect(() => {
     localStorage.setItem('musicOrderer_songGroups', Object.keys(songGroups).length > 0 ? JSON.stringify(songGroups) : '');
@@ -348,8 +356,10 @@ export function OrderingView({ isAdmin, userPhone }: OrderingViewProps) {
       }
 
       if (data.success) {
-        localStorage.removeItem('musicOrderer_songGroups');
-        setSongGroups({});
+        if (!keepPreviewOnSend) {
+          localStorage.removeItem('musicOrderer_songGroups');
+          setSongGroups({});
+        }
         const who = isAdmin && selectedClient ? ` para ${selectedClient.name}` : '';
         alert(`¡Pedido enviado exitosamente${who}!\n\nID: ${data.data.tempId}\nCanciones: ${data.data.totalSongs}\nPrecio: $${(data.data.price / 100).toFixed(2)}`);
       } else {
@@ -359,7 +369,7 @@ export function OrderingView({ isAdmin, userPhone }: OrderingViewProps) {
       console.error('Error enviando request:', error);
       alert(`Error enviando el pedido: ${error}`);
     }
-  }, [songGroups, isAdmin, selectedClient, userPhone]);
+  }, [songGroups, isAdmin, selectedClient, userPhone, keepPreviewOnSend]);
 
   const phoneNumber = isAdmin ? (selectedClient?.phoneNumber || '') : (userPhone || '');
 
@@ -442,7 +452,13 @@ export function OrderingView({ isAdmin, userPhone }: OrderingViewProps) {
       {isAdmin && (
         <div className="flex items-center justify-between gap-3 border-b bg-background px-4 py-3">
           <div className="text-sm font-medium text-muted-foreground">Panel de Administración</div>
-          <div className="ml-auto">{clientHeader}</div>
+          <div className="ml-auto flex items-center gap-4">
+            <label className="flex items-center gap-2 text-sm text-muted-foreground">
+              Mantener preview al enviar
+              <Switch checked={keepPreviewOnSend} onCheckedChange={setKeepPreviewOnSend} />
+            </label>
+            {clientHeader}
+          </div>
         </div>
       )}
 

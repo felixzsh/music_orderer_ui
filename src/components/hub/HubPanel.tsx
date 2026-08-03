@@ -33,10 +33,11 @@ export function HubPanel({ slots, status, lastEventAt, pendingSlot, onToggleSour
         <table className="w-full table-fixed border-separate border-spacing-0">
           <thead className="bg-slate-900">
             <tr className="text-left text-[10px] uppercase tracking-wider text-slate-500">
-              <th className="px-2 py-1.5 text-center font-medium">Puertos</th>
-              <th className="px-2 py-1.5 text-center font-medium">Estados</th>
-              <th className="px-2 py-1.5 text-center font-medium">Label</th>
-              <th className="px-2 py-1.5 text-center font-medium" title="Activo = external (USBs de clientes)">
+              <th className="px-2 py-1.5 text-center font-medium" style={{ width: '9%' }}>Port</th>
+              <th className="px-2 py-1.5 text-center font-medium" style={{ width: '14%' }}>Label</th>
+              <th className="px-2 py-1.5 text-center font-medium" style={{ width: '50%' }}>Progress</th>
+              <th className="px-2 py-1.5 text-center font-medium" style={{ width: '12%' }}>State</th>
+              <th className="px-2 py-1.5 text-center font-medium" style={{ width: '6%' }} title="Activo = external (USBs de clientes)">
                 Ext
               </th>
             </tr>
@@ -62,6 +63,13 @@ export function HubPanel({ slots, status, lastEventAt, pendingSlot, onToggleSour
           <span className="flex items-center gap-1"><span className="hub-led hub-led--sm hub-led--burning" /> Quemando</span>
           <span className="flex items-center gap-1"><span className="hub-led hub-led--sm hub-led--completed" /> Listo</span>
           <span className="flex items-center gap-1"><span className="hub-led hub-led--sm hub-led--error" /> Error</span>
+        </div>
+        <div className="mt-1 flex items-center gap-1">
+          <span
+            className="inline-block"
+            style={{ width: 10, height: 10, backgroundColor: '#a78bfa', borderRadius: 2 }}
+          />
+          Fila morada = solo USBs de clientes (externos), no USB propias
         </div>
         <div className="mt-1">
           {lastEventAt ? `Última actualización: ${lastEventAt.toLocaleTimeString()}` : 'Esperando estado…'}
